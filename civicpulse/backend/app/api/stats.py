@@ -59,15 +59,7 @@ def get_stats(db: Session = Depends(get_db)) -> StatsResponse:
     by_category.update({str(category.value): count for category, count in category_rows})
     resolution_rate = round((resolved / total) * 100, 1) if total else 0.0
 
-    return StatsResponse(
-        total=total,
-        resolved=resolved,
-        pending=pending,
-        filed=filed,
-        acknowledged=acknowledged,
-        in_progress=in_progress,
-        rejected=rejected,
-        by_category=by_category,
+    
     ward_status_rows = db.query(Complaint.ward, Complaint.status, func.count(Complaint.id)).group_by(Complaint.ward, Complaint.status).all()
     ward_details = {}
     for w, status, count in ward_status_rows:
