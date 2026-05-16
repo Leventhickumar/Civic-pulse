@@ -79,7 +79,7 @@ export default function FilterBar({ filters, onChange, onSortChange, sortBy }) {
           onChange={(event) => onSortChange(event.target.value)}
           className="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-brand-sky"
         >
-          <option value="upvotes">Sort by Upvotes</option>
+          <option value="upvotes">Sort by Most Upvoted</option>
           <option value="recent">Sort by Recent</option>
         </select>
       </div>

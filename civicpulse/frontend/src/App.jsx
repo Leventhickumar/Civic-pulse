@@ -1,5 +1,7 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useState } from "react";
+import Landing from "./pages/Landing";
+import Leaderboard from "./pages/Leaderboard";
 import Navbar from "./components/Navbar";
 import PageTransition from "./components/PageTransition";
 import Toast from "./components/Toast";
@@ -29,6 +31,8 @@ function ProtectedRoute({ children, adminOnly = false }) {
 
 export default function App() {
   const [toast, setToast] = useState(null);
+  const location = useLocation();
+  const token = localStorage.getItem("token");
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -36,13 +40,16 @@ export default function App() {
     window.__civicPulseToastTimer = window.setTimeout(() => setToast(null), 3500);
   };
 
+  const isLanding = !token && location.pathname === "/";
+
   return (
     <div className="min-h-screen">
-      <Navbar />
-      <main className="pt-28">
+      {!isLanding && <Navbar />}
+      <main className={isLanding ? "" : "pt-28"}>
         <PageTransition>
           <Routes>
-            <Route path="/" element={<Home showToast={showToast} />} />
+            <Route path="/" element={token ? <Home showToast={showToast} /> : <Landing showToast={showToast} />} />
+            <Route path="/leaderboard" element={<Leaderboard showToast={showToast} />} />
             <Route path="/stats" element={<StatsDashboard showToast={showToast} />} />
             <Route path="/login" element={<Login showToast={showToast} />} />
             <Route path="/register" element={<Register showToast={showToast} />} />

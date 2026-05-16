@@ -90,6 +90,6 @@ class StatsResponse(BaseModel):
     in_progress: int
     rejected: int
     by_category: dict[str, int]
-    by_ward: dict[str, int]
+    by_ward: dict[str, dict[str, int | float]]
     by_date: list[dict[str, str | int]]
     resolution_rate: float

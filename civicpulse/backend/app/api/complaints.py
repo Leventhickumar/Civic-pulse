@@ -88,6 +88,8 @@ def list_complaints(
     ward: str | None = Query(None),
     search: str = Query(""),
     sort_by: str = Query("upvotes"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> list[Complaint]:
     query = db.query(Complaint)
@@ -113,6 +115,7 @@ def list_complaints(
     else:
         query = query.order_by(desc(Complaint.upvote_count), desc(Complaint.created_at))
 
+    query = query.offset(skip).limit(limit)
     return query.all()
 
 

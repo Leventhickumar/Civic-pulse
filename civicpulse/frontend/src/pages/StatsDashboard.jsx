@@ -39,6 +39,8 @@ export default function StatsDashboard({ showToast }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(new Date().toISOString());
+  const [wardSearch, setWardSearch] = useState("");
+  const [wardSortConfig, setWardSortConfig] = useState({ key: "total", direction: "desc" });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -89,6 +91,34 @@ export default function StatsDashboard({ showToast }) {
         : [],
     [stats]
   );
+
+  const sortedWards = useMemo(() => {
+    if (!stats?.by_ward) return [];
+    
+    let items = Object.entries(stats.by_ward)
+      .map(([ward, data]) => ({ ward, ...data }))
+      .filter(item => item.ward.toLowerCase().includes(wardSearch.toLowerCase()));
+
+    items.sort((a, b) => {
+      if (a[wardSortConfig.key] < b[wardSortConfig.key]) {
+        return wardSortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[wardSortConfig.key] > b[wardSortConfig.key]) {
+        return wardSortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return items;
+  }, [stats, wardSearch, wardSortConfig]);
+
+  const requestWardSort = (key) => {
+    let direction = 'desc';
+    if (wardSortConfig.key === key && wardSortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setWardSortConfig({ key, direction });
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -197,6 +227,61 @@ export default function StatsDashboard({ showToast }) {
                   <Area type="monotone" dataKey="count" stroke="#5fa8d3" fill="url(#complaintTrend)" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+          </section>
+
+          <section className="mt-8 rounded-[2rem] bg-white/90 p-6 shadow-float">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <h2 className="text-xl font-bold text-brand-ink">Ward Activity Table</h2>
+              <div className="relative w-full sm:w-64">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search ward..."
+                  value={wardSearch}
+                  onChange={(e) => setWardSearch(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 py-2 pl-10 pr-4 outline-none focus:border-brand-sky text-sm"
+                />
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                  <tr>
+                    {['ward', 'total', 'resolved', 'pending', 'resolution_rate'].map((key) => (
+                      <th 
+                        key={key} 
+                        className={`px-4 py-3 cursor-pointer select-none hover:bg-slate-100 transition ${key !== 'ward' ? 'text-center' : ''}`}
+                        onClick={() => requestWardSort(key)}
+                      >
+                        <div className={`flex items-center gap-1 ${key !== 'ward' ? 'justify-center' : ''}`}>
+                          {key === 'ward' ? 'Ward' : key === 'resolution_rate' ? 'Resolution Rate' : key.charAt(0).toUpperCase() + key.slice(1)}
+                          {wardSortConfig.key === key && (
+                            <span>{wardSortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {sortedWards.map((item) => (
+                    <tr key={item.ward} className="transition hover:bg-slate-50">
+                      <td className="px-4 py-3 font-semibold text-brand-ink">{item.ward}</td>
+                      <td className="px-4 py-3 text-center">{item.total}</td>
+                      <td className="px-4 py-3 text-center text-emerald-600">{item.resolved}</td>
+                      <td className="px-4 py-3 text-center text-amber-600">{item.pending}</td>
+                      <td className="px-4 py-3 text-center font-bold text-brand-sky">{item.resolution_rate}%</td>
+                    </tr>
+                  ))}
+                  {sortedWards.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="py-6 text-center text-slate-400">No wards match your search</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
         </>

@@ -51,6 +51,9 @@ export default function Navbar() {
             <NavLink to="/stats" className={linkClassName} onClick={() => setMenuOpen(false)}>
               Stats
             </NavLink>
+            <NavLink to="/leaderboard" className={linkClassName} onClick={() => setMenuOpen(false)}>
+              Leaderboard
+            </NavLink>
             {token ? (
               <NavLink to="/file" className={linkClassName} onClick={() => setMenuOpen(false)}>
                 File Complaint

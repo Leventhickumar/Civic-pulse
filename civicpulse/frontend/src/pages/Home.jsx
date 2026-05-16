@@ -16,28 +16,44 @@ export default function Home({ showToast }) {
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [pulsingId, setPulsingId] = useState(null);
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const isLoggedIn = Boolean(localStorage.getItem("token"));
 
-  const fetchComplaints = async () => {
-    setLoading(true);
-    try {
-      const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, v]) => v !== "")
-      );
-      const { data } = await api.get("/complaints", {
-        params: {
-          ...cleanFilters,
-          search: filters.search,
-          sort_by: sortBy,
-        },
-      });
-      setComplaints(data);
-    } catch (error) {
-      showToast(getApiErrorMessage(error, "Failed to load complaints"), "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    setSkip(0);
+  }, [sortBy, filters.search, filters.category, filters.status, filters.ward]);
+
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      if (skip === 0) setLoading(true);
+      try {
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([_, v]) => v !== "")
+        );
+        const { data } = await api.get("/complaints", {
+          params: {
+            ...cleanFilters,
+            search: filters.search,
+            sort_by: sortBy,
+            skip,
+            limit: 10,
+          },
+        });
+        if (skip === 0) {
+          setComplaints(data);
+        } else {
+          setComplaints((current) => [...current, ...data]);
+        }
+        setHasMore(data.length === 10);
+      } catch (error) {
+        showToast(getApiErrorMessage(error, "Failed to load complaints"), "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchComplaints();
+  }, [sortBy, filters.search, filters.category, filters.status, filters.ward, skip]);
 
   const fetchStats = async () => {
     setStatsLoading(true);
@@ -50,10 +66,6 @@ export default function Home({ showToast }) {
       setStatsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchComplaints();
-  }, [sortBy, filters.search, filters.category, filters.status, filters.ward]);
 
   useEffect(() => {
     fetchStats();
@@ -105,7 +117,7 @@ export default function Home({ showToast }) {
         </div>
       </section>
 
-      <div className="mt-8">
+      <div className="mt-8 flex items-center justify-between">
         <FilterBar
           filters={filters}
           sortBy={sortBy}
@@ -114,13 +126,23 @@ export default function Home({ showToast }) {
         />
       </div>
 
-      <section className="mt-8 space-y-5">
+      <div className="mt-6 mb-2 font-semibold text-slate-500">
+        Showing {complaints.length} complaints
+      </div>
+
+      <section className="space-y-5">
         {loading ? (
           Array.from({ length: 3 }).map((_, index) => <LoadingSkeleton key={index} card />)
         ) : complaints.length === 0 ? (
           <EmptyState
-            title="No complaints match these filters"
+            icon="📋"
+            title="No complaints yet"
             description="Try widening the ward or status filters to surface more reports from nearby neighborhoods."
+            action={
+              <Link to="/file" className="inline-flex rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02] transition">
+                Be the first to file one
+              </Link>
+            }
           />
         ) : (
           complaints.map((complaint) => (
@@ -132,6 +154,17 @@ export default function Home({ showToast }) {
               isPulsing={pulsingId === complaint.id}
             />
           ))
+        )}
+        
+        {hasMore && !loading && complaints.length > 0 && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setSkip((prev) => prev + 10)}
+              className="rounded-full bg-brand-mist px-6 py-3 font-semibold text-brand-ink transition hover:bg-slate-200 hover:scale-[1.02]"
+            >
+              Load More
+            </button>
+          </div>
         )}
       </section>
     </div>

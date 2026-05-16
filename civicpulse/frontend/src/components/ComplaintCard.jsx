@@ -7,7 +7,7 @@ export default function ComplaintCard({ complaint, onUpvote, canUpvote = true, i
   const categoryMeta = getCategoryMeta(complaint.category);
 
   return (
-    <div className={`rounded-3xl border border-white/70 border-l-4 ${categoryMeta.borderClass} bg-white/90 p-6 shadow-float backdrop-blur`}>
+    <Link to={`/complaint/${complaint.id}`} className={`group block rounded-3xl border border-white/70 border-l-4 ${categoryMeta.borderClass} bg-white/90 p-6 shadow-float backdrop-blur transition-all duration-200 ease-in-out hover:-translate-y-[2px] hover:shadow-lg`}>
       <div className="flex h-full flex-col gap-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
@@ -15,9 +15,9 @@ export default function ComplaintCard({ complaint, onUpvote, canUpvote = true, i
               <CategoryBadge category={complaint.category} />
               <StatusBadge status={complaint.status} />
             </div>
-            <Link to={`/complaint/${complaint.id}`} className="text-xl font-bold text-brand-ink transition hover:text-brand-sky">
+            <h2 className="text-xl font-bold text-brand-ink transition group-hover:text-brand-sky">
               {complaint.title}
-            </Link>
+            </h2>
             <p className="text-sm text-slate-500">
               Ward {complaint.ward} • Filed {formatRelativeTime(complaint.created_at)}
             </p>
@@ -36,8 +36,11 @@ export default function ComplaintCard({ complaint, onUpvote, canUpvote = true, i
             {canUpvote && (
               <button
                 type="button"
-                onClick={() => onUpvote?.(complaint.id)}
-                className="rounded-2xl bg-brand-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onUpvote?.(complaint.id);
+                }}
+                className="rounded-2xl bg-brand-ink px-4 py-2 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-slate-800"
               >
                 Support
               </button>
@@ -46,11 +49,11 @@ export default function ComplaintCard({ complaint, onUpvote, canUpvote = true, i
         </div>
 
         <div className="mt-auto flex justify-end">
-          <Link to={`/complaint/${complaint.id}`} className="text-sm font-semibold text-brand-clay transition hover:text-brand-ink">
-            View Details →
-          </Link>
+          <span className="text-sm font-semibold text-brand-clay transition-all duration-200 group-hover:translate-x-1 group-hover:text-brand-ink">
+            View Details &rarr;
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

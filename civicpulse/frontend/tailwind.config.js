@@ -15,7 +15,21 @@ export default {
         float: "0 20px 40px -24px rgba(23, 50, 77, 0.45)",
       },
       fontFamily: {
-        sans: ["Avenir Next", "Segoe UI", "Tahoma", "Geneva", "Verdana", "sans-serif"],
+        sans: ["Inter", "Avenir Next", "Segoe UI", "Tahoma", "Geneva", "Verdana", "sans-serif"],
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.3s ease-in-out',
+        slideInRight: 'slideInRight 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInRight: {
+          '0%': { opacity: '0', transform: 'translateX(100%)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
       },
     },
   },

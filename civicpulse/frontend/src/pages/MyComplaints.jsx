@@ -39,11 +39,12 @@ export default function MyComplaints({ showToast }) {
           Array.from({ length: 2 }).map((_, index) => <LoadingSkeleton key={index} card />)
         ) : complaints.length === 0 ? (
           <EmptyState
-            title="You haven't filed any complaints yet"
+            icon="🗂️"
+            title="You haven't filed anything yet"
             description="When something needs attention in your ward, start a report and we’ll help you track it from filing to resolution."
             action={
-              <Link to="/file" className="inline-flex rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white">
-                File Your First Complaint
+              <Link to="/file" className="inline-flex rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white hover:scale-[1.02] transition">
+                File your first complaint
               </Link>
             }
           />
